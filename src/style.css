@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #070c16;
+  --color-ink-900: #0b1220;
+  --color-ink-800: #121c2e;
+  --color-ink-700: #1c2942;
+}
+
+@layer base {
+  html { color-scheme: dark; }
+
+  body {
+    @apply bg-ink-950 text-slate-200 antialiased;
+    background-image: radial-gradient(60rem 40rem at 50% -10rem, #0e2a3a 0%, transparent 70%);
+    background-attachment: fixed;
+  }
+}
+
+/* 放進 components layer，行內的 utility class（如 px-2 py-1）才蓋得過去 */
+@layer components {
+  .field {
+    @apply w-full rounded-lg border border-ink-700 bg-ink-900/70 px-3 py-2 text-sm
+           text-slate-100 placeholder:text-slate-500
+           focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 focus:outline-none;
+  }
+
+  /* Tailwind v4 的 @apply 不吃自訂 class，共用樣式改用選擇器並列 */
+  .btn, .btn-primary, .btn-ghost, .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2
+           text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary { @apply bg-cyan-600 text-white hover:bg-cyan-500; }
+  .btn-ghost   { @apply border border-ink-700 text-slate-300 hover:border-cyan-700 hover:text-cyan-300; }
+  .btn-danger  { @apply border border-rose-900/70 text-rose-300 hover:bg-rose-950/60; }
+
+  .card  { @apply rounded-xl border border-ink-700 bg-ink-900/60 p-4; }
+  .label { @apply mb-1 block text-xs font-medium text-slate-400; }
+  .chip  { @apply inline-flex items-center rounded-md bg-ink-800 px-1.5 py-0.5 text-[11px] text-slate-400; }
+}

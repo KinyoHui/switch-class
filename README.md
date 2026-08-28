@@ -122,6 +122,44 @@ src/
 
 ---
 
+## 自架部署（Docker Compose）
+
+`deploy/` 底下是一套自架的部署設定，不依賴 Supabase 雲端。四個服務：
+
+| 服務 | 映像 | 角色 |
+|---|---|---|
+| `web` | nginx:stable-alpine | 靜態前端 + `/rest/v1`、`/auth/v1` 反向代理 |
+| `rest` | supabase/postgrest | PostgREST |
+| `auth` | supabase/gotrue | 管理頁登入 |
+| `db` | supabase/postgres | 內含 pg_cron、pgcrypto、`anon`/`authenticated` 角色與 `auth` schema |
+
+**刻意不用 Kong**——nginx 同時擔任靜態伺服器與 API 閘道，在小機器上省下約 200MB 記憶體與一整份 Kong 設定。
+
+```bash
+# 伺服器上
+cd /docker/compose/switch-class
+./deploy.sh http://<你的位址>            # 產金鑰 → 建置 → 起服務 → 套 migration
+./scripts/setup-admin.sh <email> <密碼>  # 建立管理員帳號
+```
+
+`deploy.sh` 可重複執行：`.env` 已存在就不覆蓋，migration 全部冪等。
+
+### 幾個踩過的坑
+
+- **大陸機房連不上 Docker Hub**，但 `public.ecr.aws` 可達，Supabase 全套映像都在那；nginx 與 node 也用
+  `public.ecr.aws/nginx/nginx`、`public.ecr.aws/docker/library/node`。Docker CE 本身則走清華鏡像安裝。
+- **npm 官方 registry 慢到會逾時**（實測 >20s），Dockerfile 建置階段預設用 `registry.npmmirror.com`（4s）。
+- **`supabase/postgres` 映像裡 `postgres` 不是 superuser。** `authenticator` 與 `supabase_auth_admin`
+  是保留角色，要用 `supabase_admin` 才改得動密碼；而 migration 必須以 `postgres` 執行，
+  表與函式的擁有者是它，`SECURITY DEFINER` 繞過 RLS 才成立。這兩件事分開處理，見
+  `scripts/apply-migrations.sh`。
+- **該映像不會自動用 `POSTGRES_PASSWORD` 設服務角色密碼**，得自己 `alter role`，否則 PostgREST 與
+  GoTrue 會一直 restart。
+
+實測資源占用：四個容器合計約 585MB，在 2 核 1.9G 的機器上還剩 1.4G。
+
+---
+
 ## 撮合的規模上限（實測）
 
 `run_matching()` 每輪是**全表重算**，不是增量：把所有 `status='open'` 的意向重新推導一次兩人互換與三人環換，

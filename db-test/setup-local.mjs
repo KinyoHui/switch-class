@@ -20,6 +20,7 @@ const psql = (sql) =>
 console.log('1) pg_cron')
 psql('create extension if not exists pg_cron;')
 psql(`select cron.schedule('swap-matching', '*/10 * * * *', $$ select public.run_matching() $$);`)
+psql(`select cron.schedule('team-matching', '*/10 * * * *', $$ select public.run_teaming() $$);`)
 console.log('   ' + psql(`select jobname || '  ' || schedule || '  active=' || active from cron.job`))
 
 console.log('2) 管理員帳號')

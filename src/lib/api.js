@@ -68,10 +68,27 @@ export const cancelRequest = (id, requestId) =>
 export const checkConflicts = (id, groupId) =>
   rpc('check_conflicts', { ...identity(id), p_group: groupId })
 
+/* ------------------------------------------------------------------- 組隊 */
+
+export const submitTeam = (p) => rpc('submit_team', {
+  p_name: p.name,
+  p_student_no: p.studentNo,
+  p_phone: p.phone || null,
+  p_email: p.email || null,
+  p_query_code: p.queryCode,
+  p_groups: p.groupIds,
+  p_note: p.note || null
+})
+
+export const myTeam    = (id) => rpc('my_team', identity(id))
+export const leaveTeam = (id) => rpc('leave_team', identity(id))
+
 /* ------------------------------------------------------------------- 管理端 */
 
 export const adminOverview       = () => rpc('admin_overview')
+export const adminTeamOverview   = () => rpc('admin_team_overview')
 export const adminRunMatching    = () => rpc('admin_run_matching')
+export const adminRunTeaming     = () => rpc('admin_run_teaming')
 export const adminPurgeStudents  = () => rpc('admin_purge_students')
 export const adminResetQueryCode = (studentNo) =>
   rpc('admin_reset_query_code', { p_student_no: studentNo })

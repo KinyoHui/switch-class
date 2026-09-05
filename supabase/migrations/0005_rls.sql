@@ -48,8 +48,6 @@ revoke all on table students, swap_requests, swap_targets,
                    match_groups, match_members
   from anon, authenticated;
 
-revoke all on table v_triples from anon, authenticated;
-
 -- Supabase 預設有給 public schema 的表授權，但不依賴預設，顯式寫出來
 grant select on table courses, course_groups, group_sessions, campuses,
                       v_group_detail, v_group_session_merged
@@ -70,7 +68,7 @@ revoke execute on function
   check_conflicts(text,text,text,bigint),
   verify_student(text,text,text),
   expire_stale_matches(),
-  match_pairs(), match_triples(), run_matching()
+  match_pairs(), run_matching()
   from public, anon, authenticated;
 
 grant execute on function

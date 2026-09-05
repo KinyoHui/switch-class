@@ -26,26 +26,16 @@ console.log('A｜陳大文 S2601 — 一筆配到、一筆配不到')
   await page.screenshot({ path: '/tmp/demo-A.png', fullPage: true }); await page.close()
 }
 
-console.log('B｜林志明 S2603 — 三人環換')
-{
-  const { page, t } = await openQuery('S2603', '林志明')
-  ok(t.includes('3 人環換'), '顯示 3 人環換標籤')
-  ok(t.includes('吳佩珊') && t.includes('張家豪'), '兩位對家都列出')
-  const order = ['林志明', '吳佩珊', '張家豪'].map(n => t.indexOf(n))
-  ok(t.includes('你'), '自己那格標為「你」')
-  await page.screenshot({ path: '/tmp/demo-B.png', fullPage: true }); await page.close()
-}
-
-console.log('C｜李文彥 S2606 — 配不到')
+console.log('B｜李文彥 S2606 — 配不到')
 {
   const { page, t } = await openQuery('S2606', '李文彥')
   ok(t.includes('進行中'), '意向仍為進行中')
   ok(t.includes('尚未配對到，下一輪撮合會再試'), '意向卡標示尚未配對到')
   ok(t.includes('目前還沒有配對成功的組合'), '匹配結果區顯示空狀態文案')
-  await page.screenshot({ path: '/tmp/demo-C.png', fullPage: true }); await page.close()
+  await page.screenshot({ path: '/tmp/demo-B.png', fullPage: true }); await page.close()
 }
 
-console.log('D｜蔡明軒 S2608 — 已結束匹配')
+console.log('C｜蔡明軒 S2608 — 已結束匹配')
 {
   const { page, t } = await openQuery('S2608', '蔡明軒')
   ok(t.includes('已結束'), '意向狀態顯示「已結束」')
@@ -53,10 +43,10 @@ console.log('D｜蔡明軒 S2608 — 已結束匹配')
   ok(!btns.some(b => ['修改', '撤銷', '結束匹配'].includes(b.trim())),
      `已結束的意向不再提供修改／撤銷／結束按鈕（頁面按鈕：${btns.map(b => b.trim()).join('、')}）`)
   ok(t.includes('沒有進行中的意向'), '匹配結果區顯示「沒有進行中的意向」')
-  await page.screenshot({ path: '/tmp/demo-D.png', fullPage: true }); await page.close()
+  await page.screenshot({ path: '/tmp/demo-C.png', fullPage: true }); await page.close()
 }
 
-console.log('D｜許雅雯 S2609 — 對家結束後，候選組消失')
+console.log('C｜許雅雯 S2609 — 對家結束後，候選組消失')
 {
   const { page, t } = await openQuery('S2609', '許雅雯')
   ok(t.includes('進行中'), '自己的意向還在，狀態進行中')

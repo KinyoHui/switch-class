@@ -4,11 +4,13 @@ import { configured } from './lib/supabase'
 import AppNotice from './components/AppNotice.vue'
 import SubmitView from './views/SubmitView.vue'
 import QueryView from './views/QueryView.vue'
+import TeamView from './views/TeamView.vue'
 import AdminView from './views/AdminView.vue'
 
 const TABS = [
   { key: 'submit', label: '提交意向' },
   { key: 'query', label: '我的匹配' },
+  { key: 'team', label: '課程組隊' },
   { key: 'admin', label: '管理' }
 ]
 
@@ -27,7 +29,8 @@ provide('notify', notify)
 const editTarget = ref(null)
 provide('editRequest', (courseId) => { editTarget.value = courseId; tab.value = 'submit' })
 
-const view = computed(() => ({ submit: SubmitView, query: QueryView, admin: AdminView }[tab.value]))
+const view = computed(() =>
+  ({ submit: SubmitView, query: QueryView, team: TeamView, admin: AdminView }[tab.value]))
 </script>
 
 <template>
@@ -36,7 +39,10 @@ const view = computed(() => ({ submit: SubmitView, query: QueryView, admin: Admi
   <div class="mx-auto max-w-3xl px-4 pb-16 pt-6">
     <header class="mb-5">
       <h1 class="text-xl font-semibold tracking-tight text-slate-100">換組意向匹配</h1>
-      <p class="mt-1 text-sm text-slate-500">同一門課、不同組別之間互換。系統只做配對，換組仍需雙方到 MyHKMU 辦理。</p>
+      <p class="mt-1 text-sm text-slate-500">
+        同一門課、不同組別之間互換；另可依完整課表尋找課程組合相同的同學組隊。
+        系統只做配對，換組仍需雙方到 MyHKMU 辦理。
+      </p>
     </header>
 
     <div v-if="!configured" class="card mb-5 border-amber-800 bg-amber-950/40 text-sm text-amber-200">
@@ -57,7 +63,8 @@ const view = computed(() => ({ submit: SubmitView, query: QueryView, admin: Admi
 
     <footer class="mt-10 border-t border-ink-800 pt-4 text-[11px] leading-relaxed text-slate-600">
       本站僅蒐集姓名、學號與聯絡方式，用途限於換組配對；聯絡方式只在配對成立後對同組成員顯示，學期結束後清除。<br />
-      撮合每 10 分鐘統一執行一次，不是先到先得。衝堂提示僅涵蓋你在本站登記過的課程，僅供參考。
+      撮合與編隊各每 10 分鐘統一執行一次，不是先到先得。衝堂提示僅涵蓋你在本站登記過的課程，僅供參考。<br />
+      課程組隊：4 門課的課程、組別、時間與地點完全相同才會編成一隊，同隊成員彼此可見聯絡方式。
     </footer>
   </div>
 </template>

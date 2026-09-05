@@ -153,7 +153,7 @@ const STATUS = { open: '進行中', closed: '已結束', cancelled: '已撤銷' 
 
         <div v-for="m in matches" :key="m.id" class="card mb-2 border-cyan-900/70">
           <div class="mb-3 flex flex-wrap items-center gap-2">
-            <span class="chip bg-cyan-900/50 text-cyan-200">{{ m.size === 2 ? '兩人互換' : `${m.size} 人環換` }}</span>
+            <span class="chip bg-cyan-900/50 text-cyan-200">兩人互換</span>
             <span class="text-sm text-slate-300">{{ m.courseName }}</span>
           </div>
 

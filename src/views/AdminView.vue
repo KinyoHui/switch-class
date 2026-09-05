@@ -2,7 +2,8 @@
 import { ref, onMounted, inject } from 'vue'
 import {
   signIn, signOut, currentAdmin, adminOverview, adminImportCourse,
-  adminRunMatching, adminPurgeStudents, adminResetQueryCode
+  adminRunMatching, adminPurgeStudents, adminResetQueryCode,
+  adminTeamOverview, adminRunTeaming
 } from '../lib/api'
 import { parseTimetable } from '../lib/parseTimetable'
 
@@ -14,6 +15,7 @@ const password = ref('')
 const busy = ref(false)
 
 const overview = ref([])
+const teamOverview = ref([])
 const raw = ref('')
 const draft = ref('')          // 解析結果，匯入前可直接改
 const warnings = ref([])
@@ -24,7 +26,10 @@ onMounted(refresh)
 async function refresh () {
   try {
     user.value = await currentAdmin()
-    if (user.value) overview.value = await adminOverview()
+    if (user.value) {
+      ;[overview.value, teamOverview.value] =
+        await Promise.all([adminOverview(), adminTeamOverview()])
+    }
   } catch (e) { notify(e.message, 'error') }
 }
 
@@ -42,6 +47,7 @@ async function logout () {
   await signOut()
   user.value = null
   overview.value = []
+  teamOverview.value = []
 }
 
 function parse () {
@@ -68,7 +74,8 @@ async function run (fn, ok, confirmText) {
   try {
     const n = await fn()
     notify(ok(n))
-    overview.value = await adminOverview()
+    ;[overview.value, teamOverview.value] =
+      await Promise.all([adminOverview(), adminTeamOverview()])
   } catch (e) { notify(e.message, 'error') } finally { busy.value = false }
 }
 
@@ -130,6 +137,29 @@ const SAMPLE = `ENVR 8951SCF 中國特色的可持續發展（二○二六年秋
       </div>
     </section>
 
+    <!-- -------------------------------------------------------- 組隊總覽 -->
+    <section class="card">
+      <h2 class="mb-2 text-sm font-semibold text-slate-200">課程組隊</h2>
+      <p class="mb-3 text-xs text-slate-500">
+        依「4 門課完全相同」分群。一隊 6 人，滿了自動開新隊；等待中＝組合尚無第二人或名額待補。
+      </p>
+      <div class="space-y-2">
+        <div v-for="t in teamOverview" :key="t.signature" class="rounded-lg border border-ink-700 bg-ink-900/50 p-3">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-xs">
+            <span class="chip bg-cyan-900/50 text-cyan-200">{{ t.team_count }} 支隊伍</span>
+            <span class="text-slate-400">已編隊 {{ t.member_count }} 人</span>
+            <span v-if="t.waiting > 0" class="text-amber-300">等待中 {{ t.waiting }} 人</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <span v-for="c in t.courses" :key="c.group_id" class="chip">
+              {{ c.course_code }} <span class="ml-1 text-cyan-300">{{ c.group_no }}</span>
+            </span>
+          </div>
+        </div>
+        <p v-if="!teamOverview.length" class="text-sm text-slate-500">尚無組隊意向</p>
+      </div>
+    </section>
+
     <!-- -------------------------------------------------------- 課表匯入 -->
     <section class="card space-y-3">
       <div class="flex items-center justify-between">
@@ -161,6 +191,10 @@ const SAMPLE = `ENVR 8951SCF 中國特色的可持續發展（二○二六年秋
                 @click="run(adminRunMatching, (n) => `撮合完成，新增 ${n} 個候選組`)">
           手動執行一輪撮合
         </button>
+        <button class="btn-ghost" :disabled="busy"
+                @click="run(adminRunTeaming, (n) => `編隊完成，新建 ${n} 支隊伍`)">
+          手動執行一輪編隊
+        </button>
         <button class="btn-danger" :disabled="busy"
                 @click="run(adminPurgeStudents, (n) => `已清除 ${n} 位學生的資料`,
                            '確定清除所有學生資料？意向與匹配會一併刪除，無法復原。')">
@@ -181,7 +215,8 @@ const SAMPLE = `ENVR 8951SCF 中國特色的可持續發展（二○二六年秋
 
       <p class="text-xs leading-relaxed text-slate-500">
         pg_cron 排程請在 Supabase SQL Editor 執行：<br />
-        <code class="text-cyan-400">select cron.schedule('swap-matching', '*/10 * * * *', $$ select public.run_matching() $$);</code>
+        <code class="text-cyan-400">select cron.schedule('swap-matching', '*/10 * * * *', $$ select public.run_matching() $$);</code><br />
+        <code class="text-cyan-400">select cron.schedule('team-matching', '*/10 * * * *', $$ select public.run_teaming() $$);</code>
       </p>
     </section>
   </div>

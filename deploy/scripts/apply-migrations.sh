@@ -28,9 +28,10 @@ for f in app/supabase/migrations/*.sql; do
   echo "ok"
 done
 
-echo "→ 啟用 pg_cron 排程（每 10 分鐘撮合一次）"
+echo "→ 啟用 pg_cron 排程（每 10 分鐘各跑一次換組撮合與組隊編隊）"
 as_admin -q -c "create extension if not exists pg_cron;"
 as_admin -q -c "select cron.schedule('swap-matching', '*/10 * * * *', \$\$ select public.run_matching() \$\$);" >/dev/null
+as_admin -q -c "select cron.schedule('team-matching', '*/10 * * * *', \$\$ select public.run_teaming() \$\$);" >/dev/null
 as_admin -t -c "select '   ' || jobname || '  ' || schedule || '  active=' || active from cron.job;"
 
 echo "→ 重啟 PostgREST / GoTrue"

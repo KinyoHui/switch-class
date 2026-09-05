@@ -144,7 +144,7 @@ for each row execute function check_target_group();
 create table if not exists match_groups (
   id         bigint generated always as identity primary key,
   course_id  bigint not null references courses(id) on delete cascade,
-  size       int  not null,                    -- 2 = 互換，3 = 環換
+  size       int  not null,                    -- 2 = 兩人互換
   signature  text not null unique,             -- 冪等去重鍵
   status     text not null default 'pending',  -- pending / expired
   created_at timestamptz not null default now()

@@ -132,8 +132,13 @@ language plpgsql security definer set search_path = public as $$
 declare v_n int;
 begin
   perform assert_admin();
-  delete from students;               -- 級聯清掉意向、目標與匹配
+  -- where 子句是必要的：supabase/postgres 對 authenticator 啟用了 safeupdate，
+  -- 無條件的 DELETE 會被擋下（SQLSTATE 21000）
+  delete from students where id is not null;   -- 級聯清掉意向、目標、匹配與組隊
   get diagnostics v_n = row_count;
+  -- teams 沒有指向 students 的外鍵，級聯帶不走；留著會讓下學期的隊伍序號
+  -- 從舊的 seq 續編（顯示成「第 7 隊」卻只有一支隊伍）
+  delete from teams where id is not null;
   return v_n;
 end $$;
 
